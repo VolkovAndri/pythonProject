@@ -1,10 +1,39 @@
 import random
 
+class Car:
+    def __init__(self):
+        self.coins = 0
+        self.has_car = False
+
+    def buy_car(self, human):
+        if human.coins >= 150:
+            print("Congratulations! You bought a car.")
+            human.coins -= 150  # Car costs 150 coins
+            self.has_car = True
+        else:
+            print("You don't have enough coins to buy a car.")
+
+    def casino(self):
+        if self.has_car:
+            print("You decide to go to the casino.")
+            roll = random.randint(1, 10)
+            if roll > 7:
+                print("Congratulations! You won 10,000 coins!")
+                self.coins += 10000
+            else:
+                print("Unfortunately, you lost 10 coins at the casino.")
+                self.coins -= 10
+                print("You decide to sell your car.")
+                self.has_car = False
+                self.coins += 150  # Selling the car returns 150 coins
+
 class HumanLife:
     def __init__(self):
         self.happiness = 30
         self.satiation = 50
         self.love = 5
+        self.coins = 100
+        self.car = Car()
 
     def play_game(self):
         choices = ['rock', 'paper', 'scissors']
@@ -36,6 +65,7 @@ class HumanLife:
         if choice == "yes":
             print("You chose to help. You receive positive messages!")
             self.love += 20
+            self.coins += 30
         elif choice == "no":
             print("You chose not to help. You receive negative messages.")
             self.love -= 20
@@ -43,34 +73,50 @@ class HumanLife:
             print("Invalid choice.")
 
     def eat(self):
-        choice = input("Would you like to eat? (yes/no): ").lower()
+        choice = input("Would you like to buy food? (yes/no): ").lower()
         if choice == "yes":
-            print("You chose to eat.")
-            self.satiation += 10
+            if self.coins >= 10:
+                print("You chose to buy food.")
+                self.satiation += 10
+                self.coins -= 10
+            else:
+                print("You don't have enough coins to buy food.")
+                self.satiation -= 5
         elif choice == "no":
-            print("You chose not to eat.")
+            print("You chose not to buy food.")
             self.satiation -= 5
         else:
             print("Invalid choice.")
 
     def check_status(self):
-        if self.happiness >= 100 and self.satiation >= 100 and self.love >= 100:
-            print("Congratulations! You've achieved maximum happiness, satiation, and love!")
-            return True
-        return False
+        return self.happiness >= 100 and self.satiation >= 100 and self.love >= 100
 
     def live(self, days):
         for day in range(1, days+1):
             print(f"Day {day}:")
-            print(f"Happiness: {self.happiness}, Satiation: {self.satiation}, Love: {self.love}")
-            self.play_game()
-            self.help_stranger()
-            self.eat()
+            while not self.check_status():
+                print(f"Happiness: {self.happiness}, Satiation: {self.satiation}, Love: {self.love}, Coins: {self.coins}")
+                if self.coins >= 150 and not self.car.has_car:
+                    choice = input("Would you like to buy a car? (yes/no): ").lower()
+                    if choice == "yes":
+                        self.car.buy_car(self)
+                    elif choice == "no":
+                        print("You chose not to buy a car.")
+                    else:
+                        print("Invalid choice.")
+                if not self.car.has_car:
+                    self.play_game()
+                    self.help_stranger()
+                    self.eat()
+                else:
+                    self.car.casino()
             if self.check_status():
+                print("Congratulations! You've achieved maximum happiness, satiation, and love!")
                 print("Moving to the next day...\n")
                 self.happiness = 30
                 self.satiation = 50
                 self.love = 5
+                self.coins = 100
 
 human = HumanLife()
 human.live(30)
